@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanderlust Viajes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="hero-header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    <i class="fas fa-plane-departure"></i> Wanderlust
+                </div>
+                <div class="user-box">
+                    <a id="user-link" href="perfil.html" class="user-link">
+                        <i class="fas fa-user-circle"></i> <span id="user-text">Iniciar Sesión</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="hero-content container">
+            <h1>Tu Próxima Gran Aventura</h1>
+            <p>Descubre destinos paradisíacos y vive experiencias inolvidables.</p>
+            <a href="#destinos" class="btn-primary">Explorar Destinos</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="destinos" class="destinations-section">
+            <div class="container">
+                <h2 class="section-title">Elige tu Destino</h2>
+                
+                <div class="grid-container">
+                    <article class="travel-card">
+                        <div class="card-image-container">
+                            <img src="https://images.unsplash.com/photo-1589979481223-deb893043163?q=80&w=600&auto=format&fit=crop">
+                        </div>
+                        <div class="card-content">
+                            <h3>Bora Bora</h3>
+                            <p class="description">Polinesia Francesa. Relax total en bungalows.</p>
+                            
+                            <label style="font-size:0.8rem; color:#888;">📅 Fecha de viaje:</label>
+                            <input type="date" id="date-bora" class="date-input">
+                            
+                            <div class="card-actions">
+                                <span class="price-tag">$1,200</span>
+                                <button onclick="reservar('Bora Bora', '$1,200', 'date-bora')" class="btn-reservar">
+                                    Reservar ➝
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="travel-card">
+                        <div class="card-image-container">
+                            <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?q=80&w=600&auto=format&fit=crop">
+                        </div>
+                        <div class="card-content">
+                            <h3>Santorini</h3>
+                            <p class="description">Grecia. Vistas espectaculares y mar azul.</p>
+                            
+                            <label style="font-size:0.8rem; color:#888;">📅 Fecha de viaje:</label>
+                            <input type="date" id="date-santo" class="date-input">
+                            
+                            <div class="card-actions">
+                                <span class="price-tag">$950</span>
+                                <button onclick="reservar('Santorini', '$950', 'date-santo')" class="btn-reservar">
+                                    Reservar ➝
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="travel-card">
+                        <div class="card-image-container">
+                            <img src="https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=600&auto=format&fit=crop">
+                        </div>
+                        <div class="card-content">
+                            <h3>Machu Picchu</h3>
+                            <p class="description">Perú. Aventura histórica en los Andes.</p>
+                            
+                            <label style="font-size:0.8rem; color:#888;">📅 Fecha de viaje:</label>
+                            <input type="date" id="date-machu" class="date-input">
+                            
+                            <div class="card-actions">
+                                <span class="price-tag">$800</span>
+                                <button onclick="reservar('Machu Picchu', '$800', 'date-machu')" class="btn-reservar">
+                                    Reservar ➝
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="booking-section">
+            <div class="container overlay-contact">
+                <div class="glass-form">
+                    <h2>Contáctanos</h2>
+                    <p>¿Tienes dudas? Te ayudamos a armar tu viaje ideal.</p>
+                    
+                    <input type="text" id="contact-name" class="contact-input" placeholder="Tu Nombre Completo">
+                    <input type="email" id="contact-email" class="contact-input" placeholder="Tu Correo Electrónico">
+                    <textarea id="contact-msg" class="contact-input" rows="3" placeholder="Escribe tu mensaje..."></textarea>
+                    
+                    <button onclick="enviarMensaje()" class="btn-send">ENVIAR MENSAJE</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container"><p>Wanderlust Viajes &copy; 2026.</p></div>
+    </footer>
+
+    <script>
+   
+        console.log("✅ Sistema de Viajes Cargado Correctamente");
+
+        const API_URL = 'http://localhost:3001';
+        const token = localStorage.getItem('token');
+        const usuario = localStorage.getItem('usuario_actual');
+        const userText = document.getElementById('user-text');
+        const userLink = document.getElementById('user-link');
+
+        // 1. GESTIÓN DE SESIÓN
+        if (token && usuario) {
+            // Si hay usuario, actualizamos la barra
+            userText.textContent = `Hola, ${usuario}`;
+            userLink.href = "perfil.html";
+            
+            // Crear botón de salir
+            const btnSalir = document.createElement('i');
+            btnSalir.className = 'fas fa-sign-out-alt';
+            btnSalir.style.marginLeft = '10px';
+            btnSalir.style.cursor = 'pointer';
+            btnSalir.title = "Cerrar Sesión";
+            btnSalir.onclick = (e) => {
+                e.preventDefault();
+                if(confirm("¿Cerrar sesión?")) {
+                    localStorage.clear();
+                    window.location.reload();
+                }
+            };
+            userLink.appendChild(btnSalir);
+        }
+
+        // 2. FUNCIÓN DE RESERVA
+        async function reservar(destino, precio, inputId) {
+            // Verificar si el usuario está logueado
+            if (!token) {
+                alert('⚠️ Debes iniciar sesión para reservar.');
+                window.location.href = 'perfil.html';
+                return;
+            }
+
+            // Obtener fecha del input correcto
+            const fechaInput = document.getElementById(inputId);
+            const fecha = fechaInput.value;
+
+            if (!fecha) {
+                alert("⚠️ Por favor selecciona una fecha para tu viaje.");
+                fechaInput.focus(); // Poner el cursor en la fecha
+                return;
+            }
+
+            if(!confirm(`¿Confirmar reserva a ${destino} para el ${fecha}?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/reservas`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ destino, precio, fecha_viaje: fecha })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✅ ¡Reserva guardada con éxito! Puedes verla en tu perfil.');
+                    window.location.href = 'perfil.html';
+                } else {
+                    alert('❌ Error del servidor: ' + (data.error || "Desconocido"));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión. Verifica que "node server.js" esté corriendo.');
+            }
+        }
+
+        // 3. FUNCIÓN DE CONTACTO
+        async function enviarMensaje() {
+            const n = document.getElementById('contact-name').value;
+            const e = document.getElementById('contact-email').value;
+            const m = document.getElementById('contact-msg').value;
+            
+            if(!n || !e || !m) {
+                alert("⚠️ Por favor llena todos los campos del formulario.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/contacto`, {
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ nombre: n, email: e, mensaje: m })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("✅ ¡Mensaje enviado! Nos pondremos en contacto contigo.");
+                    location.reload(); // Recargar para limpiar el formulario
+                } else {
+                    alert("❌ Error: " + data.error);
+                }
+            } catch (error) {
+                alert("❌ Error de conexión. El servidor parece apagado.");
+            }
+        }
+    </script>
+</body>
+</html>

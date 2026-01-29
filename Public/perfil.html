@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Wanderlust</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { color: #00897b; margin-bottom: 20px; font-weight: 700; }
+
+        .input-box {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-box:focus { border-color: #00cba9; box-shadow: 0 0 8px rgba(0, 203, 169, 0.2); }
+
+        .btn-full {
+            width: 100%;
+            background: linear-gradient(45deg, #00cba9, #009e83);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+        .btn-full:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 203, 169, 0.3); }
+
+        /* Estilos de la lista de viajes */
+        .trip-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border-left: 5px solid #00cba9;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .oculto { display: none !important; }
+        
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        a:hover { color: #00cba9; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card">
+        
+        <div id="auth-view">
+            <i class="fas fa-plane-departure" style="font-size: 3rem; color: #00cba9; margin-bottom: 10px;"></i>
+            <h2 id="auth-title">Iniciar Sesión</h2>
+            
+            <input type="text" id="user" class="input-box" placeholder="Usuario">
+            <input type="email" id="email" class="input-box oculto" placeholder="Correo Electrónico">
+            <input type="password" id="pass" class="input-box" placeholder="Contraseña">
+            
+            <button id="btn-submit" class="btn-full">ENTRAR</button>
+            
+            <p style="margin-top:20px; font-size:0.9rem;">
+                <a href="#" id="toggle-link" style="color:#ff6b6b; font-weight:bold;">¿No tienes cuenta? Regístrate</a>
+            </p>
+            <a href="index.html" style="display:block; margin-top:20px; color:#666;">← Volver al inicio</a>
+        </div>
+
+        <div id="trips-view" class="oculto">
+            <h2 style="color:#333;">Mis Viajes ✈️</h2>
+            
+            <div id="trips-list" style="margin-top:20px; max-height: 300px; overflow-y: auto;">
+                </div>
+            
+            <button onclick="logout()" style="background:#ff6b6b; color:white; border:none; padding:10px 25px; border-radius:50px; margin-top:20px; cursor:pointer; font-weight:bold;">
+                Cerrar Sesión
+            </button>
+            
+            <a href="index.html" style="display:block; margin-top:15px; color:#00cba9; font-weight:bold;">+ Reservar nuevo viaje</a>
+        </div>
+
+    </div>
+
+    <script>
+        const API = 'http://localhost:3001';
+        let isLogin = true;
+        
+        // Elementos
+        const authView = document.getElementById('auth-view');
+        const tripsView = document.getElementById('trips-view');
+        const emailInput = document.getElementById('email');
+        const title = document.getElementById('auth-title');
+        const btnSubmit = document.getElementById('btn-submit');
+        const toggleLink = document.getElementById('toggle-link');
+
+        // 1. Checar sesión al cargar
+        if(localStorage.getItem('token')) {
+            mostrarReservas();
+        }
+
+        // 2. Cambiar entre Login y Registro
+        toggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            
+            if (isLogin) {
+                title.textContent = 'Iniciar Sesión';
+                btnSubmit.textContent = 'ENTRAR';
+                toggleLink.textContent = '¿No tienes cuenta? Regístrate';
+                emailInput.classList.add('oculto'); // Ocultar email en login
+            } else {
+                title.textContent = 'Crear Cuenta';
+                btnSubmit.textContent = 'REGISTRARSE';
+                toggleLink.textContent = '¿Ya tienes cuenta? Entra';
+                emailInput.classList.remove('oculto'); // Mostrar email en registro
+            }
+        });
+
+        // 3. Botón Enviar
+        btnSubmit.addEventListener('click', async () => {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const e = document.getElementById('email').value;
+            const endpoint = isLogin ? '/auth/login' : '/auth/register';
+            
+            // Validar
+            if(!u || !p) return alert("Por favor llena usuario y contraseña");
+            if(!isLogin && !e) return alert("El correo es obligatorio para registrarse");
+
+            const body = isLogin ? { username: u, password: p } : { username: u, email: e, password: p };
+
+            try {
+                const res = await fetch(API + endpoint, {
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if(res.ok) {
+                    if(isLogin) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('usuario_actual', u);
+                        // Ir al inicio para reservar
+                        window.location.href = 'index.html'; 
+                    } else {
+                        alert('¡Cuenta creada con éxito! Ahora inicia sesión.');
+                        location.reload();
+                    }
+                } else {
+                    alert(data.error || 'Error desconocido');
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error al conectar con el servidor. Revisa que esté prendido.");
+            }
+        });
+
+        // 4. Mostrar Reservas
+        async function mostrarReservas() {
+            // Ocultar login, mostrar viajes
+            authView.classList.add('oculto');
+            tripsView.classList.remove('oculto');
+            
+            try {
+                const res = await fetch(API + '/api/reservas', { 
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
+                });
+                
+                if (res.status === 401 || res.status === 403) {
+                    // Token vencido
+                    logout();
+                    return;
+                }
+
+                const trips = await res.json();
+                const list = document.getElementById('trips-list');
+                list.innerHTML = trips.length ? '' : '<p style="color:#777;">Aún no tienes reservas.</p>';
+                
+                trips.forEach(t => {
+                    // Arreglar la fecha (si viene nula o formato raro)
+                    let fechaTexto = "Fecha pendiente";
+                    if(t.fecha_viaje) {
+                        // Sumar un día para compensar la zona horaria si es necesario
+                        const f = new Date(t.fecha_viaje);
+                        f.setMinutes(f.getMinutes() + f.getTimezoneOffset());
+                        fechaTexto = f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                    }
+
+                    list.innerHTML += `
+                        <div class="trip-item">
+                            <div>
+                                <b style="color:#00897b; font-size:1.1rem;">${t.destino}</b>
+                                <div style="font-size:0.9rem; color:#555; margin-top:2px;">📅 ${fechaTexto}</div>
+                                <div style="font-size:0.85rem; color:#888;">Precio: ${t.precio}</div>
+                            </div>
+                            <button onclick="borrar(${t.id})" title="Cancelar Reserva" style="color:#ff6b6b; background:none; border:none; cursor:pointer; font-size:1.2rem;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>`;
+                });
+            } catch(e) {
+                console.log(e);
+            }
+        }
+
+        // 5. Borrar
+        window.borrar = async (id) => {
+            if(!confirm('¿Seguro que quieres cancelar este viaje?')) return;
+            await fetch(`${API}/api/reservas/${id}`, { 
+                method: 'DELETE', 
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
+            });
+            mostrarReservas();
+        };
+
+        // 6. Salir
+        window.logout = () => {
+            localStorage.clear();
+            window.location.href = 'index.html'; // Ir al inicio limpio
+        };
+    </script>
+</body>
+</html>

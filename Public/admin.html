@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Wanderlust</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Ajustes específicos para el panel de admin */
+        body { background: #eee; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .admin-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .oculto { display: none; }
+        .task-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
+        .btn-logout { background: #ff6b6b; border: none; padding: 5px 10px; color: white; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container" style="display: flex; justify-content: center;">
+        
+        <div id="seccion-auth" class="admin-box">
+            <h2 style="color: var(--primary); text-align: center;">Acceso Administrativo</h2>
+            <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" id="auth-user">
+            </div>
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="auth-pass">
+            </div>
+            <button id="btn-auth" class="btn-submit-beach">Entrar</button>
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="#" id="toggle-auth" style="color: var(--primary);">Registrar nuevo admin</a>
+            </p>
+            <p id="error-auth" style="color: red; text-align: center;" class="oculto"></p>
+            <br>
+            <a href="index.html" style="display:block; text-align:center; color: #777;">Volver al inicio</a>
+        </div>
+
+        <div id="seccion-tareas" class="admin-box oculto">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: var(--primary);">Tareas Internas</h2>
+                <button id="btn-logout" class="btn-logout">Salir</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="input-tarea" placeholder="Nueva tarea..." style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex-grow: 1;">
+                <button id="btn-agregar" style="background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 5px; cursor: pointer;">+</button>
+            </div>
+
+            <ul id="lista-tareas" style="list-style: none;"></ul>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
