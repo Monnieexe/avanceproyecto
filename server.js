@@ -12,11 +12,10 @@ const path = require('path');
 
 
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'Public')));
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
-
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
