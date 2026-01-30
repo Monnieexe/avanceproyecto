@@ -7,10 +7,20 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors());
-app.use(express.static('.'));
+// --- IMPORTANTE: Agrega esto al puro principio del archivo (línea 1 o 2) ---
+const path = require('path'); 
 
-// 1. CONEXIÓN SEGURA A BASE DE DATOS
+// ... (tu código de base de datos sigue igual) ...
+
+// --- CAMBIA LA PARTE DE LOS ARCHIVOS ESTÁTICOS POR ESTO: ---
+app.use(express.static(__dirname));
+
+// --- AGREGA ESTO ANTES DE app.listen PARA QUE ENCUENTRE EL INDEX ---
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ... (el resto de tus rutas de login/reservas siguen igual) ...
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
