@@ -169,7 +169,10 @@ app.post('/api/contacto', async (req, res) => {
 });
 
 // --- ARRANQUE DEL SERVIDOR ---
+// --- ARRANQUE DEL SERVIDOR (MODIFICADO) ---
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+
+// Agregamos '0.0.0.0' para que Railway pueda verlo desde afuera
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SERVIDOR CORRIENDO en el puerto ${PORT}`);
 });
