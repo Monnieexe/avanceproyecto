@@ -17,11 +17,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
 
-// --- 2. CONEXIÓN INTELIGENTE A BASE DE DATOS ---
+
 const pool = mysql.createPool({
-    // Usa la URL maestra de Railway o los datos sueltos
+   
     uri: process.env.MYSQL_URL, 
-    // Si no hay URL, usa los datos individuales como respaldo
     host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
     user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
     password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
@@ -123,11 +122,10 @@ app.delete('/api/reservas/:id', verifyToken, async (req, res) => {
     res.json({ message: 'Eliminado' });
 });
 
-// --- ARRANQUE BLINDADO ---
-// 1. Usamos el puerto que Railway nos dé. Si no nos da nada, usamos 3001.
+
 const PORT = process.env.PORT || 3001;
 
-// 2. IMPORTANTE: '0.0.0.0' hace que la página sea visible para el mundo
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SERVIDOR LISTO en el puerto ${PORT}`);
 });
