@@ -18,13 +18,13 @@ app.get('/', (req, res) => {
 });
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+    user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
+    database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'agencia_viajes',
+    port: process.env.MYSQLPORT || process.env.DB_PORT || 3306
 });
 
-// Prueba de conexión al arrancar
 pool.getConnection()
     .then(conn => {
         console.log("✅ ¡Conectado a la Base de Datos!");
