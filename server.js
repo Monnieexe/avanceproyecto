@@ -4,21 +4,23 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const path = require('path'); // Importante para las rutas
 
 const app = express();
 app.use(express.json());
 
-const path = require('path'); 
-
-
-
+// --- 1. CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ---
+// Esto hace que la carpeta 'Public' sea visible
 app.use(express.static(path.join(__dirname, 'Public')));
+
+// Ruta principal para cargar el index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
 
-
+// --- 2. CONEXIÓN A BASE DE DATOS INTELIGENTE ---
 const pool = mysql.createPool({
+    // Busca primero la variable de Railway (MYSQL...), si no está, usa la de casa (DB...)
     host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
     user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
     password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
@@ -29,17 +31,52 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+// --- 3. CREACIÓN AUTOMÁTICA DE TABLAS ---
+// Esto se ejecuta al arrancar para asegurar que la BD tenga muebles 🪑
 pool.getConnection()
-    .then(conn => {
+    .then(async conn => {
         console.log("✅ ¡Conectado a la Base de Datos!");
+        
+        // Tabla USUARIOS
+        await conn.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                password VARCHAR(255) NOT NULL
+            )
+        `);
+
+        // Tabla RESERVAS
+        await conn.query(`
+            CREATE TABLE IF NOT EXISTS reservas (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT,
+                destino VARCHAR(255),
+                precio VARCHAR(50),
+                fecha_viaje VARCHAR(50)
+            )
+        `);
+
+        // Tabla MENSAJES
+        await conn.query(`
+            CREATE TABLE IF NOT EXISTS mensajes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(255),
+                email VARCHAR(255),
+                mensaje TEXT
+            )
+        `);
+
+        console.log("✨ ¡Tablas revisadas y listas!");
         conn.release();
     })
     .catch(err => {
         console.error("❌ ERROR DE BASE DE DATOS:", err.message);
-        console.error("👉 Revisa tu archivo .env y la contraseña.");
+        console.error("👉 Si estás en local, revisa que XAMPP/MySQL esté prendido.");
     });
 
-// Middleware de seguridad
+// --- MIDDLEWARE DE SEGURIDAD ---
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Falta token' });
@@ -47,7 +84,7 @@ const verifyToken = (req, res, next) => {
     catch (e) { res.status(403).json({ error: 'Token inválido' }); }
 };
 
-// --- RUTAS ---
+// --- RUTAS DE LA API ---
 
 // Registro
 app.post('/auth/register', async (req, res) => {
@@ -102,9 +139,8 @@ app.post('/api/contacto', async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ error: 'Error al guardar mensaje' }); }
 });
 
-// --- ARRANQUE EN PUERTO 3001 ---
-const PORT = 3001;
+// --- ARRANQUE DEL SERVIDOR ---
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`🚀 SERVIDOR LISTO en http://localhost:${PORT}`);
-    console.log("👉 Ve a tu navegador y prueba entrar.");
 });
