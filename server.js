@@ -10,17 +10,16 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- 1. CONFIGURACIÓN DE ARCHIVOS ---
+// --- 1. ARCHIVOS ESTÁTICOS ---
 app.use(express.static(path.join(__dirname, 'Public')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
 
-
-const pool = mysql.createPool({
-   
-    uri: process.env.MYSQL_URL, 
+// --- 2. CONEXIÓN A BASE DE DATOS ROBUSTA ---
+// Volvemos a la estrategia segura: probar la URL y si falla, usar variables sueltas.
+const dbConfig = {
     host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
     user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
     password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
@@ -29,49 +28,32 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-});
+};
 
-// --- 3. CONSTRUCTOR DE TABLAS (Evita errores de "Table doesn't exist") ---
+const pool = mysql.createPool(dbConfig);
+
+// --- 3. VERIFICACIÓN DE CONEXIÓN Y TABLAS ---
 pool.getConnection()
     .then(async conn => {
         console.log("✅ ¡Conectado a la Base de Datos!");
         
-        await conn.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                password VARCHAR(255) NOT NULL
-            )
-        `);
+        // Crear tablas si no existen
+        const sqlUsers = `CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), email VARCHAR(255), password VARCHAR(255))`;
+        const sqlReservas = `CREATE TABLE IF NOT EXISTS reservas (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, destino VARCHAR(255), precio VARCHAR(50), fecha_viaje VARCHAR(50))`;
+        const sqlMensajes = `CREATE TABLE IF NOT EXISTS mensajes (id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(255), email VARCHAR(255), mensaje TEXT)`;
 
-        await conn.query(`
-            CREATE TABLE IF NOT EXISTS reservas (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT,
-                destino VARCHAR(255),
-                precio VARCHAR(50),
-                fecha_viaje VARCHAR(50)
-            )
-        `);
+        await conn.query(sqlUsers);
+        await conn.query(sqlReservas);
+        await conn.query(sqlMensajes);
 
-        await conn.query(`
-            CREATE TABLE IF NOT EXISTS mensajes (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(255),
-                email VARCHAR(255),
-                mensaje TEXT
-            )
-        `);
-
-        console.log("✨ Tablas listas.");
+        console.log("✨ Tablas verificadas.");
         conn.release();
     })
     .catch(err => {
-        console.error("❌ ERROR DE BD:", err.message);
+        console.error("❌ ERROR CRÍTICO DE BD:", err.message);
     });
 
-// --- MIDDLEWARE SEGURIDAD ---
+// --- MIDDLEWARE ---
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Falta token' });
@@ -88,7 +70,7 @@ app.post('/auth/register', async (req, res) => {
         const hash = await bcrypt.hash(password, 10);
         await pool.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hash]);
         res.status(201).json({ message: 'Usuario creado' });
-    } catch (e) { res.status(400).json({ error: 'Error al registrar' }); }
+    } catch (e) { res.status(400).json({ error: 'Error registro' }); }
 });
 
 app.post('/auth/login', async (req, res) => {
@@ -122,10 +104,8 @@ app.delete('/api/reservas/:id', verifyToken, async (req, res) => {
     res.json({ message: 'Eliminado' });
 });
 
-
+// --- ARRANQUE OBLIGATORIO EN 0.0.0.0 ---
 const PORT = process.env.PORT || 3001;
-
-
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SERVIDOR LISTO en el puerto ${PORT}`);
 });
