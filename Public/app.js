@@ -1,10 +1,7 @@
-// --- YA NO NECESITAMOS LA VARIABLE API_URL ---
-// Al quitarla, el navegador usará automáticamente la dirección de la página (Railway)
 
 const vistaAuth = document.getElementById('vista-auth');
 const vistaViajes = document.getElementById('vista-viajes');
 
-// Si estamos en perfil.html
 if (vistaAuth) {
     const btnAccion = document.getElementById('btn-accion');
     const toggleAuth = document.getElementById('toggle-auth');
@@ -31,7 +28,7 @@ if (vistaAuth) {
 
         if (!usuario || !pass) return alert("Llena los campos");
 
-        // AQUÍ EL CAMBIO IMPORTANTE: Quitamos API_URL y dejamos solo 'ruta'
+       
         const res = await fetch(ruta, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -45,7 +42,7 @@ if (vistaAuth) {
                 mostrarMisViajes();
             } else {
                 alert("¡Cuenta creada! Ahora inicia sesión.");
-                toggleAuth.click(); // Cambiar a vista login
+                toggleAuth.click(); 
             }
         } else {
             alert(data.error);
@@ -58,9 +55,9 @@ if (vistaAuth) {
         cargarViajes();
     }
 
-    // Cargar lista de viajes
+
     async function cargarViajes() {
-        // AQUÍ EL CAMBIO IMPORTANTE: Ruta relativa directa '/api/mis-viajes'
+        
         const res = await fetch('/api/mis-viajes', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -80,7 +77,7 @@ if (vistaAuth) {
     // Guardar nuevo viaje
     document.getElementById('btn-guardar-viaje').addEventListener('click', async () => {
         const destino = document.getElementById('select-destino').value;
-        // AQUÍ EL CAMBIO IMPORTANTE: Ruta relativa directa
+       
         await fetch('/api/mis-viajes', {
             method: 'POST',
             headers: { 
@@ -99,7 +96,7 @@ if (vistaAuth) {
     });
 
     window.borrar = async (id) => {
-        // AQUÍ EL CAMBIO IMPORTANTE: Ruta relativa directa
+
         await fetch(`/api/mis-viajes/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
