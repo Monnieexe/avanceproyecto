@@ -4,23 +4,21 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const path = require('path'); // Importante para las rutas
+const path = require('path'); 
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-// --- 1. CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ---
-// Esto hace que la carpeta 'Public' sea visible
 app.use(express.static(path.join(__dirname, 'Public')));
 
-// Ruta principal para cargar el index.html
+// Ruta principal explícita (por seguridad)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
 
-// --- 2. CONEXIÓN A BASE DE DATOS INTELIGENTE ---
+
 const pool = mysql.createPool({
-    // Busca primero la variable de Railway (MYSQL...), si no está, usa la de casa (DB...)
     host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
     user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
     password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
@@ -31,13 +29,12 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// --- 3. CREACIÓN AUTOMÁTICA DE TABLAS ---
-// Esto se ejecuta al arrancar para asegurar que la BD tenga muebles 🪑
+
 pool.getConnection()
     .then(async conn => {
         console.log("✅ ¡Conectado a la Base de Datos!");
         
-        // Tabla USUARIOS
+        // 1. Tabla de USUARIOS
         await conn.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -47,7 +44,7 @@ pool.getConnection()
             )
         `);
 
-        // Tabla RESERVAS
+        // 2. Tabla de RESERVAS
         await conn.query(`
             CREATE TABLE IF NOT EXISTS reservas (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,7 +55,7 @@ pool.getConnection()
             )
         `);
 
-        // Tabla MENSAJES
+        // 3. Tabla de MENSAJES (Contacto)
         await conn.query(`
             CREATE TABLE IF NOT EXISTS mensajes (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,79 +65,112 @@ pool.getConnection()
             )
         `);
 
-        console.log("✨ ¡Tablas revisadas y listas!");
+        console.log("✨ ¡Tablas verificadas y listas para usarse!");
         conn.release();
     })
     .catch(err => {
-        console.error("❌ ERROR DE BASE DE DATOS:", err.message);
-        console.error("👉 Si estás en local, revisa que XAMPP/MySQL esté prendido.");
+        console.error("❌ ERROR DE CONEXIÓN A BD:", err.message);
+        console.error("👉 Si estás en local, verifica que XAMPP esté prendido.");
+        console.error("👉 Si estás en Railway, verifica las Variables de Referencia.");
     });
 
-// --- MIDDLEWARE DE SEGURIDAD ---
+// --- MIDDLEWARE DE SEGURIDAD (TOKEN) ---
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Falta token' });
-    try { req.user = jwt.verify(token, process.env.JWT_SECRET); next(); }
-    catch (e) { res.status(403).json({ error: 'Token inválido' }); }
+    if (!token) return res.status(401).json({ error: 'Acceso denegado (Falta token)' });
+    try {
+        const secret = process.env.JWT_SECRET || 'secreto_super_seguro';
+        req.user = jwt.verify(token, secret);
+        next();
+    } catch (e) {
+        res.status(403).json({ error: 'Token inválido o expirado' });
+    }
 };
 
 // --- RUTAS DE LA API ---
 
-// Registro
+// 1. Registro de Usuario
 app.post('/auth/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+        // Encriptar contraseña
         const hash = await bcrypt.hash(password, 10);
+        // Guardar en BD
         await pool.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hash]);
-        res.status(201).json({ message: 'Usuario creado' });
-    } catch (e) { res.status(400).json({ error: 'El usuario ya existe' }); }
+        res.status(201).json({ message: 'Usuario creado exitosamente' });
+    } catch (e) {
+        console.error(e);
+        res.status(400).json({ error: 'El usuario o correo ya existe' });
+    }
 });
 
-// Login
+// 2. Inicio de Sesión (Login)
 app.post('/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const [users] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-        if (!users.length || !(await bcrypt.compare(password, users[0].password))) 
-            return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
         
-        const token = jwt.sign({ id: users[0].id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+        if (!users.length || !(await bcrypt.compare(password, users[0].password))) {
+            return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
+        }
+        
+        // Crear Token
+        const secret = process.env.JWT_SECRET || 'secreto_super_seguro';
+        const token = jwt.sign({ id: users[0].id }, secret, { expiresIn: '2h' });
+        
         res.json({ token, username });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
-// Reservas
+// 3. Guardar Reserva (Protegido con Token)
 app.post('/api/reservas', verifyToken, async (req, res) => {
     try {
         const { destino, precio, fecha_viaje } = req.body;
         await pool.query('INSERT INTO reservas (user_id, destino, precio, fecha_viaje) VALUES (?, ?, ?, ?)', 
             [req.user.id, destino, precio, fecha_viaje]);
-        res.json({ message: 'Guardado' });
-    } catch (e) { res.status(500).json({ error: 'Error al reservar' }); }
+        res.json({ message: 'Reserva guardada' });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al guardar la reserva' });
+    }
 });
 
+// 4. Obtener Mis Reservas (Protegido)
 app.get('/api/reservas', verifyToken, async (req, res) => {
-    const [rows] = await pool.query('SELECT * FROM reservas WHERE user_id = ? ORDER BY fecha_viaje ASC', [req.user.id]);
-    res.json(rows);
+    try {
+        const [rows] = await pool.query('SELECT * FROM reservas WHERE user_id = ? ORDER BY id DESC', [req.user.id]);
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json({ error: 'Error al obtener reservas' });
+    }
 });
 
+// 5. Eliminar Reserva (Protegido)
 app.delete('/api/reservas/:id', verifyToken, async (req, res) => {
-    await pool.query('DELETE FROM reservas WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    res.json({ message: 'Eliminado' });
+    try {
+        await pool.query('DELETE FROM reservas WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+        res.json({ message: 'Reserva eliminada' });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al eliminar' });
+    }
 });
 
-// Contacto
+// 6. Formulario de Contacto
 app.post('/api/contacto', async (req, res) => {
     try {
         const { nombre, email, mensaje } = req.body;
-        console.log("📩 Nuevo mensaje de:", nombre);
+        console.log("📩 Mensaje recibido de:", nombre);
         await pool.query('INSERT INTO mensajes (nombre, email, mensaje) VALUES (?, ?, ?)', [nombre, email, mensaje]);
-        res.json({ message: 'Enviado' });
-    } catch (e) { console.error(e); res.status(500).json({ error: 'Error al guardar mensaje' }); }
+        res.json({ message: 'Mensaje enviado correctamente' });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error al guardar mensaje' });
+    }
 });
 
 // --- ARRANQUE DEL SERVIDOR ---
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`🚀 SERVIDOR LISTO en http://localhost:${PORT}`);
+    console.log(`🚀 SERVIDOR CORRIENDO en el puerto ${PORT}`);
 });
