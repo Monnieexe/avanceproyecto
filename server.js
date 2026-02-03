@@ -15,7 +15,6 @@ app.use(express.static(path.join(__dirname, 'Public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'Public', 'index.html')));
 
 // --- 2. CONEXIÓN BLINDADA (USANDO LA URL MAESTRA) ---
-// Si existe MYSQL_URL (Railway), la usa directo. Si no, usa los datos sueltos (PC).
 const connectionConfig = process.env.MYSQL_URL || {
     host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
     user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
@@ -24,7 +23,7 @@ const connectionConfig = process.env.MYSQL_URL || {
     port: process.env.MYSQLPORT || process.env.DB_PORT || 3306
 };
 
-// Crear la piscina de conexión
+
 const pool = mysql.createPool(connectionConfig);
 
 // --- 3. VERIFICADOR DE TABLAS ---
@@ -32,7 +31,7 @@ pool.getConnection()
     .then(async conn => {
         console.log("✅ ¡CONEXIÓN EXITOSA A LA BD!");
         
-        // Crear tablas necesarias si no existen
+        
         await conn.query(`CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), email VARCHAR(255), password VARCHAR(255))`);
         await conn.query(`CREATE TABLE IF NOT EXISTS reservas (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, destino VARCHAR(255), precio VARCHAR(50), fecha_viaje VARCHAR(50))`);
         await conn.query(`CREATE TABLE IF NOT EXISTS mensajes (id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(255), email VARCHAR(255), mensaje TEXT)`);
@@ -106,7 +105,7 @@ app.post('/api/contacto', async (req, res) => {
     } catch (e) { res.status(500).json({ error: 'Error al enviar' }); }
 });
 
-// --- ARRANQUE EN 0.0.0.0 (OBLIGATORIO) ---
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SERVIDOR LISTO en el puerto ${PORT}`);
