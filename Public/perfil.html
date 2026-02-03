@@ -66,7 +66,7 @@
         }
         .btn-full:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 203, 169, 0.3); }
 
-        /* Estilos de la lista de viajes */
+  
         .trip-item {
             background: white;
             padding: 15px;
@@ -125,7 +125,7 @@
        const API = '';
         let isLogin = true;
         
-        // Elementos
+        
         const authView = document.getElementById('auth-view');
         const tripsView = document.getElementById('trips-view');
         const emailInput = document.getElementById('email');
@@ -218,10 +218,10 @@
                 list.innerHTML = trips.length ? '' : '<p style="color:#777;">Aún no tienes reservas.</p>';
                 
                 trips.forEach(t => {
-                    // Arreglar la fecha (si viene nula o formato raro)
+                    
                     let fechaTexto = "Fecha pendiente";
                     if(t.fecha_viaje) {
-                        // Sumar un día para compensar la zona horaria si es necesario
+                        
                         const f = new Date(t.fecha_viaje);
                         f.setMinutes(f.getMinutes() + f.getTimezoneOffset());
                         fechaTexto = f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
