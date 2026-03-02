@@ -6,24 +6,23 @@
     <title>Mi Perfil - Wanderlust</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        
         body {
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=1920&auto=format&fit=crop');
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=1920&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
+            background-attachment: fixed;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
             padding: 40px;
             border-radius: 20px;
@@ -33,24 +32,21 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             animation: fadeIn 0.5s ease;
         }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
         h2 { color: #00897b; margin-bottom: 20px; font-weight: 700; }
-
         .input-box {
             width: 100%;
             padding: 12px 15px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             border: 2px solid #ddd;
             border-radius: 50px;
             box-sizing: border-box;
             font-size: 1rem;
             outline: none;
             transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
         }
         .input-box:focus { border-color: #00cba9; box-shadow: 0 0 8px rgba(0, 203, 169, 0.2); }
-
         .btn-full {
             width: 100%;
             background: linear-gradient(45deg, #00cba9, #009e83);
@@ -63,69 +59,60 @@
             cursor: pointer;
             transition: transform 0.2s;
             margin-top: 10px;
+            font-family: 'Poppins', sans-serif;
         }
         .btn-full:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 203, 169, 0.3); }
-
-  
         .trip-item {
             background: white;
             padding: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-radius: 12px;
             border-left: 5px solid #00cba9;
             text-align: left;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
         }
-
+        .trip-item:hover { transform: translateX(5px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         .oculto { display: none !important; }
-        
         a { text-decoration: none; color: inherit; transition: 0.3s; }
         a:hover { color: #00cba9; }
     </style>
 </head>
 <body>
-
     <div class="glass-card">
-        
         <div id="auth-view">
             <i class="fas fa-plane-departure" style="font-size: 3rem; color: #00cba9; margin-bottom: 10px;"></i>
             <h2 id="auth-title">Iniciar Sesión</h2>
-            
             <input type="text" id="user" class="input-box" placeholder="Usuario">
             <input type="email" id="email" class="input-box oculto" placeholder="Correo Electrónico">
             <input type="password" id="pass" class="input-box" placeholder="Contraseña">
-            
             <button id="btn-submit" class="btn-full">ENTRAR</button>
-            
-            <p style="margin-top:20px; font-size:0.9rem;">
+            <p style="margin-top:20px; font-size:0.95rem;">
                 <a href="#" id="toggle-link" style="color:#ff6b6b; font-weight:bold;">¿No tienes cuenta? Regístrate</a>
             </p>
-            <a href="index.html" style="display:block; margin-top:20px; color:#666;">← Volver al inicio</a>
+            <a href="index.html" style="display:block; margin-top:20px; color:#666; font-size:0.9rem;">
+                <i class="fas fa-arrow-left"></i> Volver al inicio
+            </a>
         </div>
 
         <div id="trips-view" class="oculto">
-            <h2 style="color:#333;">Mis Viajes ✈️</h2>
-            
-            <div id="trips-list" style="margin-top:20px; max-height: 300px; overflow-y: auto;">
-                </div>
-            
-            <button onclick="logout()" style="background:#ff6b6b; color:white; border:none; padding:10px 25px; border-radius:50px; margin-top:20px; cursor:pointer; font-weight:bold;">
-                Cerrar Sesión
+            <h2 style="color:#2c3e50;"><i class="fas fa-suitcase-rolling" style="color:#00cba9;"></i> Mis Viajes</h2>
+            <div id="trips-list" style="margin-top:20px; max-height: 300px; overflow-y: auto; padding-right: 5px;"></div>
+            <button onclick="logout()" style="background:#ff6b6b; color:white; border:none; padding:10px 25px; border-radius:50px; margin-top:20px; cursor:pointer; font-weight:bold; font-family:'Poppins', sans-serif; transition: 0.3s; width:100%;">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </button>
-            
-            <a href="index.html" style="display:block; margin-top:15px; color:#00cba9; font-weight:bold;">+ Reservar nuevo viaje</a>
+            <a href="index.html" style="display:block; margin-top:15px; color:#00cba9; font-weight:bold;">
+                <i class="fas fa-plus-circle"></i> Reservar nuevo viaje
+            </a>
         </div>
-
     </div>
 
     <script>
-       const API = '';
+        const API = '';
         let isLogin = true;
-        
-        
         const authView = document.getElementById('auth-view');
         const tripsView = document.getElementById('trips-view');
         const emailInput = document.getElementById('email');
@@ -133,39 +120,38 @@
         const btnSubmit = document.getElementById('btn-submit');
         const toggleLink = document.getElementById('toggle-link');
 
-        // 1. Checar sesión al cargar
         if(localStorage.getItem('token')) {
             mostrarReservas();
         }
 
-        // 2. Cambiar entre Login y Registro
         toggleLink.addEventListener('click', (e) => {
             e.preventDefault();
             isLogin = !isLogin;
-            
             if (isLogin) {
                 title.textContent = 'Iniciar Sesión';
                 btnSubmit.textContent = 'ENTRAR';
                 toggleLink.textContent = '¿No tienes cuenta? Regístrate';
-                emailInput.classList.add('oculto'); // Ocultar email en login
+                emailInput.classList.add('oculto');
             } else {
                 title.textContent = 'Crear Cuenta';
                 btnSubmit.textContent = 'REGISTRARSE';
                 toggleLink.textContent = '¿Ya tienes cuenta? Entra';
-                emailInput.classList.remove('oculto'); // Mostrar email en registro
+                emailInput.classList.remove('oculto');
             }
         });
 
-        // 3. Botón Enviar
         btnSubmit.addEventListener('click', async () => {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
             const e = document.getElementById('email').value;
             const endpoint = isLogin ? '/auth/login' : '/auth/register';
             
-            // Validar
-            if(!u || !p) return alert("Por favor llena usuario y contraseña");
-            if(!isLogin && !e) return alert("El correo es obligatorio para registrarse");
+            if(!u || !p) {
+                return Swal.fire('Atención', 'Por favor llena usuario y contraseña', 'warning');
+            }
+            if(!isLogin && !e) {
+                return Swal.fire('Atención', 'El correo es obligatorio para registrarse', 'warning');
+            }
 
             const body = isLogin ? { username: u, password: p } : { username: u, email: e, password: p };
 
@@ -181,24 +167,20 @@
                     if(isLogin) {
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('usuario_actual', u);
-                        // Ir al inicio para reservar
                         window.location.href = 'index.html'; 
                     } else {
-                        alert('¡Cuenta creada con éxito! Ahora inicia sesión.');
+                        await Swal.fire('¡Cuenta Creada!', 'Registro exitoso. Ahora inicia sesión.', 'success');
                         location.reload();
                     }
                 } else {
-                    alert(data.error || 'Error desconocido');
+                    Swal.fire('Error', data.error || 'Credenciales incorrectas', 'error');
                 }
             } catch (err) {
-                console.error(err);
-                alert("Error al conectar con el servidor. Revisa que esté prendido.");
+                Swal.fire('Error de Conexión', 'No se pudo conectar con el servidor.', 'error');
             }
         });
 
-        // 4. Mostrar Reservas
         async function mostrarReservas() {
-            // Ocultar login, mostrar viajes
             authView.classList.add('oculto');
             tripsView.classList.remove('oculto');
             
@@ -208,57 +190,84 @@
                 });
                 
                 if (res.status === 401 || res.status === 403) {
-                    // Token vencido
-                    logout();
+                    logout(false);
                     return;
                 }
 
                 const trips = await res.json();
                 const list = document.getElementById('trips-list');
-                list.innerHTML = trips.length ? '' : '<p style="color:#777;">Aún no tienes reservas.</p>';
+                list.innerHTML = trips.length ? '' : '<p style="color:#777; margin-top:20px;">Aún no tienes reservas.</p>';
                 
                 trips.forEach(t => {
-                    
                     let fechaTexto = "Fecha pendiente";
                     if(t.fecha_viaje) {
-                        
                         const f = new Date(t.fecha_viaje);
                         f.setMinutes(f.getMinutes() + f.getTimezoneOffset());
-                        fechaTexto = f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                        fechaTexto = f.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
                     }
 
                     list.innerHTML += `
                         <div class="trip-item">
                             <div>
                                 <b style="color:#00897b; font-size:1.1rem;">${t.destino}</b>
-                                <div style="font-size:0.9rem; color:#555; margin-top:2px;">📅 ${fechaTexto}</div>
-                                <div style="font-size:0.85rem; color:#888;">Precio: ${t.precio}</div>
+                                <div style="font-size:0.9rem; color:#555; margin-top:2px;"><i class="far fa-calendar-alt"></i> ${fechaTexto}</div>
+                                <div style="font-size:0.85rem; color:#888; margin-top:3px;"><i class="fas fa-tag"></i> ${t.precio}</div>
                             </div>
-                            <button onclick="borrar(${t.id})" title="Cancelar Reserva" style="color:#ff6b6b; background:none; border:none; cursor:pointer; font-size:1.2rem;">
-                                <i class="fas fa-trash-alt"></i>
+                            <button onclick="borrar(${t.id})" title="Cancelar Reserva" style="color:#ff6b6b; background:none; border:none; cursor:pointer; font-size:1.3rem; transition:0.2s;">
+                                <i class="fas fa-times-circle"></i>
                             </button>
                         </div>`;
                 });
-            } catch(e) {
-                console.log(e);
-            }
+            } catch(e) {}
         }
 
-        // 5. Borrar
         window.borrar = async (id) => {
-            if(!confirm('¿Seguro que quieres cancelar este viaje?')) return;
-            await fetch(`${API}/api/reservas/${id}`, { 
-                method: 'DELETE', 
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
+            const confirmacion = await Swal.fire({
+                title: '¿Cancelar Viaje?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff6b6b',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Sí, cancelar viaje',
+                cancelButtonText: 'Conservar viaje'
             });
-            mostrarReservas();
+
+            if(confirmacion.isConfirmed) {
+                await fetch(`${API}/api/reservas/${id}`, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
+                });
+                
+                Swal.fire('Cancelado', 'Tu reserva ha sido eliminada.', 'success');
+                mostrarReservas();
+            }
         };
 
-        // 6. Salir
-        window.logout = () => {
-            localStorage.clear();
-            window.location.href = 'index.html'; // Ir al inicio limpio
+        window.logout = (preguntar = true) => {
+            if(!preguntar) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#00cba9',
+                cancelButtonColor: '#ff6b6b',
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }
+            });
         };
     </script>
+</body>
+</html>
 </body>
 </html>
