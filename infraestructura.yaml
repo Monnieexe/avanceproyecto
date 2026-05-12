@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Plantilla de CloudFormation para Soluciones Tecnologicas del Futuro'
+
+Resources:
+  # 1. Creamos un servidor EC2
+  MiServidorWeb:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      # Esta es una imagen de Amazon Linux en us-east-1
+      ImageId: ami-0c02fb55956c7d316 
+      IamInstanceProfile: LabInstanceProfile
+      Tags:
+        - Key: Name
+          Value: Servidor-Automatizado-STF
+
+  # 2. Creamos un Bucket de S3 para almacenamiento
+  MiBucketDeDatos:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'stf-datos-${AWS::AccountId}-2026'
+      VersioningConfiguration:
+        Status: Enabled
