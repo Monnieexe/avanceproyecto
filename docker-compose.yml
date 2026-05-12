@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - stf_net
+networks:
+  stf_net:
+    driver: bridge
